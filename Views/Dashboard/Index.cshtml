@@ -1,0 +1,154 @@
+﻿@{
+    ViewData["isDashboard"] = true;
+}
+
+@*Summary Widgets*@
+<div class="row mb-4">
+    <div class="col-md-12">
+        <form method="get" action="@Url.Action("Reports", "Dashboard")">
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <label for="startDate" class="form-label">Start Date</label>
+                    <input type="date" id="startDate" name="startDate" class="form-control" value="@ViewBag.StartDate" disabled>
+                </div>
+                <div class="col-md-3">
+                    <label for="endDate" class="form-label">End Date</label>
+                    <input type="date" id="endDate" name="endDate" class="form-control" value="@ViewBag.EndDate" disabled>
+                </div>
+                <div class="col-md-3 align-self-end">
+                    <button type="submit" class="btn btn-success">Set</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="col-md-4">
+        <div class="d-flex flex-row widget summary income">
+            <div class="d-flex flex-column justify-content-center p-5">
+                <i class="fa-solid fa-indian-rupee-sign fa-2xl"></i>
+            </div>
+            <div class="d-flex flex-column m-auto py-2">
+                <span class="lead">Total Income</span>
+                <h1 class="display-6 fw-bold">@ViewBag.TotalIncome</h1>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="d-flex flex-row widget summary expense">
+            <div class="d-flex flex-column justify-content-center p-5">
+                <i class="fa-solid fa-indian-rupee-sign fa-2xl"></i>
+            </div>
+            <div class="d-flex flex-column m-auto py-2">
+                <span class="lead">Total Expense</span>
+                <h1 class="display-7 fw-bold">@ViewBag.TotalExpense</h1>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="d-flex flex-row widget summary balance">
+            <div class="d-flex flex-column justify-content-center p-5">
+                <i class="fa-solid fa-indian-rupee-sign fa-2xl"></i>
+            </div>
+            <div class="d-flex flex-column m-auto py-2">
+                <span class="lead">Balance</span>
+                <h1 class="display-6 fw-bold">@ViewBag.Balance</h1>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@*Doughnut Chart and Rexent Transactions*@
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="widget chart">
+            <div class="p-3">
+                <h5 class="fw-bold">Expense By Category</h5>
+            </div>
+            <canvas id="ExpenseCategory"></canvas>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="widget h-100">
+            <div class="p-3">
+                <h5 class="fw-bold">Recent Transactions</h5>
+            </div>
+            <div class="table-responsive ms-3 me-3">
+                <table id="recrentTransactions" class="table table-borderless table-hover rounded">
+                    <thead class="table-secondary">
+                        <tr>
+                            <th>Category</th>
+                            <th>Date</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in ViewBag.RecentTransactions)
+                        {
+                            <tr>
+                                <td>@item.CategoryTitleWithIcon</td>
+                                <td data-type="@item.TDate" class="text-start">@item.TDate.ToString("MMM dd, yy")</td>
+                                <td data-type="@item.FormattedAmount" class="text-end">@item.FormattedAmount</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<script>
+    var chartData1 = @Html.Raw(Json.Serialize(ViewBag.DoughnutChartData));
+    document.addEventListener("DOMContentLoaded", function () {
+        if (!chartData1 || chartData1.length === 0) {
+            console.error("Chart data is empty!");
+            return;
+        }
+
+        const ctx1 = document.getElementById("ExpenseCategory").getContext("2d");
+        new Chart(ctx1, {
+            type: 'doughnut',
+            data: {
+                labels: chartData1.map(item => item.categoryTitleWithIcon),
+                datasets: [{
+                    data: chartData1.map(item => item.amount)
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { 
+                        position: "top" ,
+                        onClick: null
+                    },
+                    datalabels: {
+                        color: "#fff",
+                        font: { weight: "bold" },
+                        formatter: (value, context) => {
+                            return chartData1[context.dataIndex].formattedAmount;
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            title: () => "", 
+                            label: function (tooltipItem) {
+                                let dataIndex = tooltipItem.dataIndex;
+                                let category = chartData1[dataIndex].categoryTitleWithIcon;
+                                let amount = chartData1[dataIndex].formattedAmount;
+                                return `${category}: ${amount}`; 
+                            }
+                        }
+                    }
+                }
+            },
+            plugins: [ChartDataLabels]
+        });
+    });
+
+
+</script>

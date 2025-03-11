@@ -1,0 +1,93 @@
+﻿@model ExpenseTracker.Models.Transaction
+
+@{
+    ViewData["PageTitle"] = Model.CategoryId == 0 ? "Create a new Transaction" : "Edit Transaction";
+}
+
+<div class="row">
+    <div class="col-md-7">
+        <div class="widget p-5" style="background-color:#f0f0f0">
+            <form asp-action="AddOrEdit">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input type="hidden" name="TransactionId" value="@Model.TransactionId" />
+                <div class="mb-3">
+                    <div class="form-group">
+                        <div class="control_wrapper TextBox-control-section">
+                            <label asp-for="TDate" class="control-label">Date</label>
+                            <input asp-for="TDate" type="date" id="TDate" class="form-control" placeholder="Date">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="form-group">
+                        <div class="control_wrapper TextBox-control-section">
+                            <label asp-for="CategoryId" class="control-label">Category</label>
+                            <select asp-for="CategoryId" class=" form-control" id="ddlCategory" name="CategoryId" aria-label="Category">
+                                @foreach (var category in ViewBag.Categories)
+                                {
+                                    <option value="@category.CategoryId">
+                                        @category.TitleWithIcon
+                                    </option>
+                                }
+                            </select>
+                            <span asp-validation-for="CategoryId" class="text-danger fs-6"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="form-group">
+                        <label asp-for="Amount" class="control-label">Amount</label>
+                        <div class="input-group">
+                            <span class="input-group-text" id="basic-addon1">₹</span>
+                            <input asp-for="Amount" type="number" id="Amount" name="Amount" class="form-control custom-number" placeholder="0" min="0" step="1">
+                            <div class="input-group-append stepper-container">
+                                <button type="button" class="btn stepper-btn stepper-up"><i class="fa-solid fa-angle-up"></i></button>
+                                <button type="button" class="btn stepper-btn stepper-down"><i class="fa-solid fa-angle-down"></i></button>
+                            </div>
+                        </div>
+                        <span asp-validation-for="Amount" class="text-danger fs-6"></span>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="form-group">
+                        <label asp-for="Description" class="control-label">Note</label>
+                        <textarea asp-for="Description" id="Description" name="Description" class="form-control" placeholder="Note" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <input id="submit" type="submit" value="Submit" class="btn btn-success" />
+                </div>
+            </form>
+        </div>
+
+    </div>
+    <div class="col-md-5">
+        <div class="widget h-100 d-flex justify-content-center align-items-center">
+            <i class="fa-solid fa-money-bill-transfer fa-2xl"></i>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        $('#ddlCategory').select2({
+            placeholder: "Choose a Category",
+            allowClear: true,
+            width: '100%',
+        });
+    });
+
+        document.addEventListener("DOMContentLoaded", function () {
+        const input = document.getElementById("Amount");
+        const upBtn = document.querySelector(".stepper-up");
+        const downBtn = document.querySelector(".stepper-down");
+
+        upBtn.addEventListener("click", function () {
+            input.stepUp(); 
+        });
+
+        downBtn.addEventListener("click", function () {
+            input.stepDown();
+        });
+    });
+</script>

@@ -1,0 +1,194 @@
+﻿@{
+    ViewData["isDashboardReport"] = true;
+}
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <form method="get" action="@Url.Action("Reports", "Dashboard")">
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <label for="startDate" class="form-label">Start Date</label>
+                    <input type="date" id="startDate" name="startDate" class="form-control" value="@ViewBag.StartDate">
+                </div>
+                <div class="col-md-3">
+                    <label for="endDate" class="form-label">End Date</label>
+                    <input type="date" id="endDate" name="endDate" class="form-control" value="@ViewBag.EndDate">
+                </div>
+                <div class="col-md-3 align-self-end">
+                    <button type="submit" class="btn btn-success">Set</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="widget chart">
+            <div class="p-4">
+                <h5 class="fw-bold">Expense By Category</h5>
+            </div>
+            <canvas id="ExpenseCategory"></canvas>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="d-flex flex-column h-100 gap-3">
+            <div class="widget flex-grow-1">
+                <div class="d-flex justify-content-center align-items-center h-100">
+                    <a onclick="exportToExcel()" style="cursor: pointer;">
+                        <img src="~/images/excelimage.png" style="width:60px" alt="Export to Excel" />
+                        <span class="fw-bold">Export to Excel</span>
+                    </a>
+                </div>
+            </div>
+            <div class="widget flex-grow-1">
+                <div class="d-flex justify-content-center align-items-center h-100">
+                    <a onclick="generatePDF()" style="cursor: pointer;">
+                        <img src="~/images/pdfimage.png" style="width:60px" alt="Generate Pdf" />
+                        <span class="fw-bold">Generate Pdf</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="widget h-100">
+            <div class="d-flex justify-content-center align-items-center h-100">
+                <span><i class="fa-solid fa-plus fa-2xl"></i> Widget</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var chartData1 = @Html.Raw(Json.Serialize(ViewBag.DoughnutChartData));
+       document.addEventListener("DOMContentLoaded", function () {
+        if (!chartData1 || chartData1.length === 0) {
+            console.error("Chart data is empty!");
+            return;
+        }
+
+        const ctx1 = document.getElementById("ExpenseCategory").getContext("2d");
+
+        // Predefined color palette (add more colors if needed)
+        const colors = [
+            "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF",
+            "#FF9F40", "#E7E9ED", "#D9A7B7", "#A3E4DB", "#FFC107"
+        ];
+
+        // Generate colors dynamically if there are more categories than colors available
+        function getColor(index) {
+            return colors[index % colors.length];
+        }
+
+        new Chart(ctx1, {
+            type: 'doughnut',
+            data: {
+                labels: chartData1.map(item => item.categoryTitleWithIcon),
+                datasets: [{
+                    data: chartData1.map(item => item.amount),
+                    backgroundColor: chartData1.map((_, index) => getColor(index)) // Assign colors
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: "top",
+                    },
+                    datalabels: {
+                        color: "#fff",
+                        font: { weight: "bold" },
+                        formatter: (value, context) => {
+                            return chartData1[context.dataIndex].formattedAmount;
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            title: () => "",
+                            label: function (tooltipItem) {
+                                let dataIndex = tooltipItem.dataIndex;
+                                let category = chartData1[dataIndex].categoryTitleWithIcon;
+                                let amount = chartData1[dataIndex].formattedAmount;
+                                return `${category}: ${amount}`;
+                            }
+                        }
+                    }
+                }
+            },
+            plugins: [ChartDataLabels]
+        });
+    });
+
+
+    function generatePDF() {
+        var transactions = @Html.Raw(Json.Serialize(ViewBag.TransactionsList));
+
+        function formatDate(dateStr) {
+            var date = new Date(dateStr);
+            return date.toLocaleDateString('en-GB').replace(/\//g, '-'); 
+        }
+
+        var startDate = formatDate("@ViewBag.StartDate");
+        var endDate = formatDate("@ViewBag.EndDate");
+
+        var tableBody = [
+            [{ text: 'Date', bold: true }, { text: 'Category', bold: true }, { text: 'Amount', bold: true }, { text: 'Note', bold: true }]
+        ];
+
+        transactions.forEach(function (t) {
+            var formattedDate = formatDate(t.tDate);
+
+            tableBody.push([
+                formattedDate,
+                t.category.title,
+                { text: t.amount.toFixed(2), alignment: 'right' },
+                t.description
+            ]);
+        });
+
+        var docDefinition = {
+            content: [
+                { text: 'Transaction Report', style: 'header' },
+                { text: `Report Period: ${startDate} to ${endDate}`, fontSize: 12, margin: [0, 0, 0, 10] },
+                {
+                    table: {
+                        headerRows: 1,
+                        widths: ['auto', '*', 'auto','*'],
+                        body: tableBody
+                    }
+                }
+            ],
+            styles: {
+                header: { fontSize: 18, bold: true, margin: [0, 0, 0, 10] }
+            }
+        };
+
+        pdfMake.createPdf(docDefinition).download('Transaction_Report.pdf');
+
+    }
+
+        function exportToExcel() {
+        var transactions = @Html.Raw(Json.Serialize(ViewBag.TransactionsList));
+
+        var data = transactions.map(t => ({
+            Date: new Date(t.tDate).toLocaleDateString('en-GB').replace(/\//g, '-'), // DD-MM-YYYY format
+            Category: t.category.title,
+            Amount: t.amount.toFixed(2),
+            Note: t.description
+        }));
+
+        var ws = XLSX.utils.json_to_sheet(data, { header: ["Date", "Category", "Amount", "Note"] });
+
+        ws['!cols'] = [
+        { wch: 15 }, 
+        { wch: 30 }, 
+        { wch: 15 },
+        { wch: 40 }  
+        ];
+
+        var wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Transactions");
+
+        XLSX.writeFile(wb, "Transaction_Report.xlsx");
+    }
+</script>

@@ -1,0 +1,57 @@
+﻿@model ExpenseTracker.Models.Transaction
+
+@{
+    ViewData["PageTitle"] = "Details";
+}
+<div class="row">
+    <div class="col-md-7">
+        <div class="widget p-5" style="background-color:#f0f0f0">
+            <input type="hidden" name="TransactionId" value="@Model.TransactionId" />
+            <div class="mb-3">
+                <div class="form-group">
+                    <div class="control_wrapper TextBox-control-section">
+                        <label asp-for="TDate" class="control-label">Date</label>
+                        <input asp-for="TDate" type="date" id="TDate" class="form-control details-input" placeholder="Date" disabled>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <div class="form-group">
+                    <div class="control_wrapper TextBox-control-section">
+                        <label asp-for="CategoryId" class="control-label">Category</label>
+                        <select asp-for="CategoryId" class=" form-control" id="ddlCategory" name="CategoryId" aria-label="Category" disabled>
+                            @foreach (var category in ViewBag.Categories)
+                            {
+                                <option value="@category.CategoryId">
+                                    @category.TitleWithIcon
+                                </option>
+                            }
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <div class="form-group">
+                    <label asp-for="Amount" class="control-label">Amount</label>
+                    <div class="input-group">
+                        <span class="input-group-text" id="basic-addon1">₹</span>
+                        <input asp-for="Amount" type="number" id="Amount" name="Amount" class="form-control custom-number details-input" disabled>
+                    </div>
+                    <span asp-validation-for="Amount" class="text-danger fs-6"></span>
+                </div>
+            </div>
+            <div class="mb-3">
+                <div class="form-group">
+                    <label asp-for="Description" class="control-label">Note</label>
+                    <textarea asp-for="Description" id="Description" name="Description" class="form-control details-input" placeholder="Note" rows="2" disabled></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-5">
+        <div class="widget h-100 d-flex justify-content-center align-items-center">
+            <i class="fa-solid fa-circle-info fa-2xl"></i>
+        </div>
+    </div>
+</div>

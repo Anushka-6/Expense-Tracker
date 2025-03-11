@@ -1,0 +1,54 @@
+﻿@model ExpenseTracker.Models.Category
+
+@{
+    ViewData["PageTitle"] = Model.CategoryId == 0 ? "Create a new Category" : "Edit Category";
+}
+
+<div class="row">
+    <div class="col-md-7">
+        <div class="widget p-5" style="background-color: #f0f0f0;">
+            <form asp-action="AddOrEdit">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input type="hidden" name="CategoryId" value="@Model.CategoryId" />
+
+                <div class="mb-3">
+                    <div class="btn-group" role="group" aria-label="Type Selection">
+                        <input type="radio" class="btn-check" id="radioleft" name="Type" value="Expense" asp-for="Type">
+                        <label class="btn btn-outline-dark" for="radioleft">Expense</label>
+
+                        <input type="radio" class="btn-check" id="radiomiddle" name="Type" value="Income" asp-for="Type">
+                        <label class="btn btn-outline-dark" for="radiomiddle">Income</label>
+                    </div>
+                </div>
+
+
+                <div class="mb-3">
+                    <div class="form-group">
+                        <label asp-for="Title" class="control-label required"></label>
+                        <input asp-for="Title" name="Title" class="form-control" placeholder="Title" />
+                        <span asp-validation-for="Title" class="text-danger fs-6"></span>
+                    </div>
+                </div>
+            
+                <div class="mb-3">
+                    <div class="form-group">
+                        <label asp-for="Icon" class="control-label"></label>
+                        <input asp-for="Icon" class="form-control" placeholder="Icon" />
+                    </div>
+                </div>
+               
+                <div class="form-group">
+                    <input id="submit" type="submit" value="Submit" class="btn btn-success" />
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="col-md-5">
+        <div class="widget h-100 d-flex justify-content-center align-items-center">
+            <i class="fa-solid fa-shapes fa-2xl"></i>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

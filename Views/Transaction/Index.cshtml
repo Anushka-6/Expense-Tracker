@@ -1,0 +1,78 @@
+﻿@model IEnumerable<ExpenseTracker.Models.Transaction>
+
+@{
+    ViewData["PageTitle"] = "Transactions";
+    ViewData["PageActionText"] = "+ New Transaction";
+    ViewData["PageActionUrl"] = "/Transaction/AddOrEdit";
+}
+
+
+<div class="row">
+    <div class="col-md-7">
+        <div class="table-responsive">
+            <table id="transactionsTable" class="table table-borderless table-hover rounded">
+                <thead class="table-secondary">
+                    <tr>
+                        <th>Category</th>
+                        <th>Date</th>
+                        <th>Amount</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.CategoryTitleWithIcon</td>
+                            <td data-type="@item.TDate" class="text-start">@item.TDate.ToString("MMM dd, yy")</td>
+                            <td data-type="@item.FormattedAmount" class="text-end">@item.FormattedAmount</td>
+                            <td data-category-id="@item.TransactionId">@item.TransactionId</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="col-md-5">
+        <div class="widget h-100 d-flex justify-content-center align-items-center">
+            <i class="fa-solid fa-shapes fa-2xl"></i>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+            $('#transactionsTable').DataTable({
+            dom: 't<"dt-footerblock"pi>',
+            paging: true,
+            info: true,
+            pageLength: 6, 
+            order: [], 
+            columnDefs: [
+                { orderable: false, targets: [0, 2, 3] },
+                {
+                    targets: 3, width: "100px",
+                    render: function (data, type, row) {
+                        const transactionId = data; 
+                        return `
+                            <div class="d-flex flex-row justify-content-start action-container">
+                                    <a class="btn btn-sm action-btn" href="/Transaction/AddOrEdit/${transactionId}">
+                                        <i class="fa-solid fa-pen fa-lg"></i>
+                                    </a>
+                                    <form action="/Transaction/Delete/${transactionId}" method="post" style="display: inline;">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm action-btn" onclick="return confirm('Are you sure to delete this record?')">
+                                            <i class="fa-solid fa-trash-can fa-lg text-danger"></i>
+                                        </button>
+                                    </form>
+                                    <a class="btn btn-sm action-btn" href="/Transaction/Details/${transactionId}">
+                                        <i class="fa-solid fa-magnifying-glass"></i>
+                                    </a>
+                                </div>`;
+                    }
+                },
+                ]
+            })
+        });
+</script>

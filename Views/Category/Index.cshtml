@@ -1,0 +1,84 @@
+﻿@model IEnumerable<ExpenseTracker.Models.Category>
+
+@{
+    ViewData["PageTitle"] = "Categories";
+    ViewData["PageActionText"] = "+ New Category";
+    ViewData["PageActionUrl"] = "/Category/AddOrEdit";
+}
+
+<div class="row">
+    <div class="col-md-7">
+        <div class="table-responsive">
+            <table id="categoriesTable" class="table table-borderless table-hover rounded">
+                <thead class="table-secondary">
+                    <tr>
+                        <th>Category</th>
+                        <th>Type</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.TitleWithIcon</td>
+                            <td data-type="@item.Type">@item.Type</td>
+                            <td data-category-id="@item.CategoryId">@item.CategoryId</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="col-md-5">
+        <div class="widget h-100 d-flex justify-content-center align-items-center">
+            <i class="fa-solid fa-shapes fa-2xl"></i>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+            $('#categoriesTable').DataTable({
+            dom: 't<"dt-footerblock"pi>',
+            paging: true,
+            info: true,
+            pageLength: 5,
+            order: [], 
+            columnDefs: [
+                { orderable: false, targets: [1, 2] },
+                {
+                    targets: 1, width: "150px",
+                    render: function (data, type, row) {
+                        const typeValue = data 
+                        if (typeValue === "Income") {
+                            return '<span class="badge bg-success">Income</span>';
+                        } else if (typeValue === "Expense") {
+                            return '<span class="badge bg-danger">Expense</span>';
+                        } else {
+                            return '<span class="badge bg-secondary">Unknown</span>';
+                        }
+                    },
+                },
+                {
+                    targets: 2, width: "100px",
+                    render: function (data, type, row) {
+                        const categoryId = data;
+                        return `
+                            <div class="d-flex flex-row justify-content-start action-container">
+                                    <a class="btn btn-sm action-btn" href="/Category/AddOrEdit/${categoryId}">
+                                        <i class="fa-solid fa-pen fa-lg"></i>
+                                    </a>
+                                    <form action="/Category/Delete/${categoryId}" method="post" style="display: inline;">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm action-btn" onclick="return confirm('Are you sure to delete this record?')">
+                                            <i class="fa-solid fa-trash-can fa-lg text-danger"></i>
+                                        </button>
+                                    </form>
+                                </div>`;
+                    }
+                },
+                ]
+            })
+        });
+</script>
