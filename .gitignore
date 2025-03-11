@@ -1,0 +1,17 @@
+# Ignore build outputs
+bin/
+obj/
+
+# Ignore Visual Studio files
+*.suo
+*.user
+*.vs/
+*.vscode/
+
+# Ignore NuGet packages
+packages/
+project.lock.json
+
+# Ignore temporary files
+*.log
+*.tmp
